@@ -2,120 +2,120 @@ const chatBox = document.getElementById("chatBox")
 
 loadHistory()
 
-function addMessage(text,type){
+function addMessage(text, type) {
 
-const msg=document.createElement("div")
+    const msg = document.createElement("div")
 
-msg.className="message "+type
+    msg.className = "message " + type
 
-msg.textContent=text
+    msg.textContent = text
 
-chatBox.appendChild(msg)
+    chatBox.appendChild(msg)
 
-chatBox.scrollTop=chatBox.scrollHeight
+    chatBox.scrollTop = chatBox.scrollHeight
 
-saveHistory()
-
-}
-
-async function sendMessage(){
-
-const input=document.getElementById("userInput")
-
-const message=input.value.trim()
-
-if(!message) return
-
-addMessage(message,"user")
-
-input.value=""
-
-const typing=document.createElement("div")
-
-typing.className="message bot typing"
-
-typing.textContent="AI is typing..."
-
-chatBox.appendChild(typing)
-
-chatBox.scrollTop=chatBox.scrollHeight
-
-try{
-
-const res=await fetch("http://localhost:5000/chat",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({message})
-
-})
-
-const data=await res.json()
-
-typing.remove()
-
-typeText(data.reply)
-
-}catch{
-
-typing.textContent="Server error"
+    saveHistory()
 
 }
 
-}
+async function sendMessage() {
 
-function typeText(text){
+    const input = document.getElementById("userInput")
 
-const msg=document.createElement("div")
+    const message = input.value.trim()
 
-msg.className="message bot"
+    if (!message) return
 
-chatBox.appendChild(msg)
+    addMessage(message, "user")
 
-let i=0
+    input.value = ""
 
-const interval=setInterval(()=>{
+    const typing = document.createElement("div")
 
-msg.textContent+=text[i]
+    typing.className = "message bot typing"
 
-i++
+    typing.textContent = "AI is typing..."
 
-if(i>=text.length){
+    chatBox.appendChild(typing)
 
-clearInterval(interval)
+    chatBox.scrollTop = chatBox.scrollHeight
 
-saveHistory()
+    try {
 
-}
+        const res = await fetch("https://ai-chatbot-xxaw.onrender.com/chat", {
 
-},15)
+            method: "POST",
 
-}
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-function handleEnter(e){
+            body: JSON.stringify({ message })
 
-if(e.key==="Enter") sendMessage()
+        })
 
-}
+        const data = await res.json()
 
-function saveHistory(){
+        typing.remove()
 
-localStorage.setItem("chatHistory",chatBox.innerHTML)
+        typeText(data.reply)
 
-}
+    } catch {
 
-function loadHistory(){
+        typing.textContent = "Server error"
 
-const history=localStorage.getItem("chatHistory")
-
-if(history){
-
-chatBox.innerHTML=history
+    }
 
 }
+
+function typeText(text) {
+
+    const msg = document.createElement("div")
+
+    msg.className = "message bot"
+
+    chatBox.appendChild(msg)
+
+    let i = 0
+
+    const interval = setInterval(() => {
+
+        msg.textContent += text[i]
+
+        i++
+
+        if (i >= text.length) {
+
+            clearInterval(interval)
+
+            saveHistory()
+
+        }
+
+    }, 15)
+
+}
+
+function handleEnter(e) {
+
+    if (e.key === "Enter") sendMessage()
+
+}
+
+function saveHistory() {
+
+    localStorage.setItem("chatHistory", chatBox.innerHTML)
+
+}
+
+function loadHistory() {
+
+    const history = localStorage.getItem("chatHistory")
+
+    if (history) {
+
+        chatBox.innerHTML = history
+
+    }
 
 }
