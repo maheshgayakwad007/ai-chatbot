@@ -19,7 +19,7 @@ function init() {
     bindEvents();
 
     if (chatSessions.length === 0) {
-        startNewConversation();
+        startNewChat();
     } else {
         switchToChat(chatSessions[0].id);
     }
@@ -80,7 +80,7 @@ function saveSessions() {
     renderHistory();
 }
 
-function startNewConversation() {
+function startNewChat() {
     const newSession = {
         id: "session_" + Date.now(),
         title: "New Conversation",
@@ -104,7 +104,7 @@ function deleteCurrentChat() {
         chatSessions = chatSessions.filter(s => s.id !== currentId);
         saveSessions();
         if (chatSessions.length > 0) switchToChat(chatSessions[0].id);
-        else startNewConversation();
+        else startNewChat();
     }
 }
 
