@@ -4,89 +4,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Workspace - Professional Chatbot</title>
-    <!-- Fonts and Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Nebula AI - Futuristic Chatbot</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
     <!-- Custom Style -->
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <div class="app-container">
-        <!-- Sidebar for History -->
+<body class="dark-theme">
+    <!-- Animated Background Blobs -->
+    <div class="blob-container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-glass">
+        <!-- Persistent Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2>Chats</h2>
-                <button class="icon-btn close-sidebar-btn" id="closeSidebarBtn" title="Close Sidebar">
-                    <i class="fas fa-times"></i>
+                <div class="logo">
+                    <i class="fas fa-sparkles"></i>
+                    <span>Nebula</span>
+                </div>
+                <button class="icon-btn close-sidebar-btn" id="closeSidebarBtn">
+                    <i class="fas fa-xmark"></i>
                 </button>
             </div>
 
-            <button class="new-chat-btn" onclick="startNewChat()">
-                <i class="fas fa-plus"></i> New Conversation
+            <button class="glass-btn new-chat-btn" onclick="startNewChat()">
+                <i class="fas fa-plus"></i> New Journey
             </button>
 
             <div class="history-list" id="historyList">
-                <!-- Chat history items will be generated here -->
+                <!-- Chat history items will appear here -->
             </div>
         </aside>
 
         <!-- Main Chat Area -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="chat-header">
+        <main class="main-chat">
+            <!-- Glass Header -->
+            <header class="glass-header">
                 <div class="header-left">
                     <button class="icon-btn menu-btn" id="menuBtn">
-                        <i class="fas fa-bars"></i>
+                        <i class="fas fa-bars-staggered"></i>
                     </button>
-                    <div class="agent-info">
-                        <div class="agent-avatar">
-                            <i class="fas fa-robot"></i>
+                    <div class="bot-profile">
+                        <div class="avatar-glow">
+                            <i class="fas fa-atom"></i>
                         </div>
-                        <div class="agent-details">
-                            <h1>AI Assistant</h1>
-                            <span class="status"><span class="status-dot"></span> Online</span>
+                        <div class="bot-status">
+                            <h1>Cosmos AI</h1>
+                            <span class="active-badge"><span class="pulse-dot"></span> Online</span>
                         </div>
                     </div>
                 </div>
-                <div class="header-right">
-                    <button class="icon-btn delete-chat-btn" onclick="deleteCurrentChat()" title="Delete Current Chat">
-                        <i class="fas fa-trash-alt"></i>
+
+                <div class="header-actions">
+                    <button class="icon-btn theme-toggle" id="themeToggleBtn" title="Shift Dimension">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="icon-btn delete-btn" onclick="deleteCurrentChat()" title="Erase Memory">
+                        <i class="fas fa-trash-can"></i>
                     </button>
                 </div>
             </header>
 
-            <!-- Chat Messages Area -->
-            <div class="chat-box" id="chatBox">
-                <!-- Welcome Screen Placeholder (shown when no messages) -->
-                <div class="welcome-screen" id="welcomeScreen">
-                    <div class="welcome-icon"><i class="fas fa-sparkles"></i></div>
-                    <h2>How can I help you today?</h2>
-                    <p>Start a conversation by typing a message below.</p>
+            <!-- Chat Content -->
+            <div class="messages-container" id="chatBox">
+                <!-- Welcome State -->
+                <div class="welcome-hero" id="welcomeScreen">
+                    <div class="hero-icon">
+                        <i class="fas fa-meteor"></i>
+                    </div>
+                    <h2>Welcome to the Future</h2>
+                    <p>I am your neural companion. What shall we explore today?</p>
+                    <div class="suggested-prompts">
+                        <button onclick="usePrompt('Plan a trip to Mars')">Mars Trip 🚀</button>
+                        <button onclick="usePrompt('Explain quantum physics')">Quantum ⚛️</button>
+                    </div>
                 </div>
-                <!-- Dynamic messages appear here -->
             </div>
 
-            <!-- Input Area -->
-            <div class="chat-input-container">
-                <div class="input-wrapper">
-                    <textarea id="userInput" placeholder="Message AI Assistant..." rows="1"></textarea>
-                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <!-- Glass Interaction Bar -->
+            <div class="input-container">
+                <div class="glass-input-wrapper">
+                    <textarea id="userInput" placeholder="Type into the void..." rows="1"></textarea>
+                    <button class="glow-send-btn" id="sendBtn" onclick="sendMessage()">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
-                <div class="footer-text">
-                    AI can make mistakes. Consider verifying important information.
-                </div>
+                <p class="disclaimer">Powered by Nebula Engine. Version 2.0.4</p>
             </div>
         </main>
     </div>
 
-    <!-- Markdown Parser -->
+    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js"></script>
 </body>

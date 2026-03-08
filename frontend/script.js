@@ -1,22 +1,24 @@
-// Initialize Elements
+// --- Constants & State ---
 const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const historyList = document.getElementById("historyList");
 const welcomeScreen = document.getElementById("welcomeScreen");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 const sidebar = document.getElementById("sidebar");
 const menuBtn = document.getElementById("menuBtn");
 const closeSidebarBtn = document.getElementById("closeSidebarBtn");
 
-// State
 let chats = [];
 let currentChatId = null;
 
-// Initialize
+// --- Initialization ---
 function init() {
     loadChats();
+    setupTheme();
     setupEventListeners();
 
+    // Auto-select or create first chat
     if (chats.length === 0) {
         startNewChat();
     } else {
@@ -24,24 +26,18 @@ function init() {
     }
 }
 
-// Event Listeners
 function setupEventListeners() {
     menuBtn.addEventListener("click", () => sidebar.classList.add("active"));
     closeSidebarBtn.addEventListener("click", () => sidebar.classList.remove("active"));
+    themeToggleBtn.addEventListener("click", toggleTheme);
 
-    // Auto-resize textarea handling
+    // Auto-resize textarea
     userInput.addEventListener("input", function () {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-        if (this.value.trim() === "") {
-            sendBtn.disabled = true;
-        } else {
-            sendBtn.disabled = false;
-        }
+        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
     });
 
-    // Handle shift+enter for new line, enter for send
-    userInput.addEventListener("keydown", function (e) {
+    userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
@@ -49,229 +45,216 @@ function setupEventListeners() {
     });
 }
 
-// Chat Management
+// --- Theme Management ---
+function setupTheme() {
+    const savedTheme = localStorage.getItem("nebula-theme") || "dark";
+    if (savedTheme === "light") {
+        document.body.setAttribute("data-theme", "light");
+        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+}
+
+function toggleTheme() {
+    const current = document.body.getAttribute("data-theme");
+    if (current === "light") {
+        document.body.removeAttribute("data-theme");
+        localStorage.setItem("nebula-theme", "dark");
+        themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+    } else {
+        document.body.setAttribute("data-theme", "light");
+        localStorage.setItem("nebula-theme", "light");
+        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+}
+
+// --- Chat Core Logic ---
 function loadChats() {
-    const savedChats = localStorage.getItem("aiChats");
-    if (savedChats) {
-        chats = JSON.parse(savedChats);
-        renderHistoryList();
+    const stored = localStorage.getItem("nebula-chats");
+    if (stored) {
+        chats = JSON.parse(stored);
+        renderHistory();
     }
 }
 
 function saveChats() {
-    localStorage.setItem("aiChats", JSON.stringify(chats));
-    renderHistoryList();
-}
-
-function generateId() {
-    return Math.random().toString(36).substr(2, 9);
+    localStorage.setItem("nebula-chats", JSON.stringify(chats));
+    renderHistory();
 }
 
 function startNewChat() {
     const newChat = {
-        id: generateId(),
-        title: "New Conversation",
+        id: Date.now().toString(),
+        title: "New Transmission",
         messages: []
     };
     chats.unshift(newChat);
     saveChats();
     selectChat(newChat.id);
-
-    // On mobile, close sidebar after clicking new chat
-    if (window.innerWidth <= 768) {
-        sidebar.classList.remove("active");
-    }
 }
 
 function selectChat(id) {
     currentChatId = id;
-    renderHistoryList();
-    renderChatBox();
-
-    // On mobile, close sidebar after selecting chat
-    if (window.innerWidth <= 768) {
-        sidebar.classList.remove("active");
-    }
+    renderChatArea();
+    renderHistory();
+    if (window.innerWidth < 850) sidebar.classList.remove("active");
 }
 
 function deleteCurrentChat() {
     if (!currentChatId) return;
-
-    if (confirm("Are you sure you want to delete this conversation?")) {
-        chats = chats.filter(chat => chat.id !== currentChatId);
+    if (confirm("Erase this transmission folder?")) {
+        chats = chats.filter(c => c.id !== currentChatId);
         saveChats();
-
-        if (chats.length > 0) {
-            selectChat(chats[0].id);
-        } else {
-            startNewChat();
-        }
+        if (chats.length > 0) selectChat(chats[0].id);
+        else startNewChat();
     }
 }
 
-// Render UI
-function renderHistoryList() {
+function usePrompt(text) {
+    userInput.value = text;
+    userInput.style.height = 'auto';
+    sendMessage();
+}
+
+// --- UI Rendering ---
+function renderHistory() {
     historyList.innerHTML = "";
     chats.forEach(chat => {
         const item = document.createElement("div");
         item.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
+        item.innerHTML = `<i class="fas fa-comment-dots"></i> <span>${chat.title}</span>`;
         item.onclick = () => selectChat(chat.id);
-        item.innerHTML = `<i class="fas fa-message"></i> <span>${chat.title}</span>`;
         historyList.appendChild(item);
     });
 }
 
-function renderChatBox() {
+function renderChatArea() {
     chatBox.innerHTML = "";
-    const currentChat = chats.find(c => c.id === currentChatId);
+    const active = chats.find(c => c.id === currentChatId);
 
-    if (!currentChat || currentChat.messages.length === 0) {
-        chatBox.appendChild(welcomeScreen);
-        welcomeScreen.style.display = "flex";
+    if (!active || active.messages.length === 0) {
+        chatBox.innerHTML = `
+            <div class="welcome-hero" id="welcomeScreen">
+                <div class="hero-icon">
+                    <i class="fas fa-meteor"></i>
+                </div>
+                <h2>Dimension: Neural</h2>
+                <p>Establishing digital uplink... Ready for interaction.</p>
+                <div class="suggested-prompts">
+                    <button onclick="usePrompt('Future of Space Travel')">Space Hub 🪐</button>
+                    <button onclick="usePrompt('How to code in Python?')">Python Core 🐍</button>
+                </div>
+            </div>
+        `;
     } else {
-        welcomeScreen.style.display = "none";
-        currentChat.messages.forEach(msg => {
-            appendMessageUI(msg.content, msg.role, false);
+        active.messages.forEach(msg => {
+            appendMessage(msg.content, msg.role, false);
         });
-        scrollToBottom();
     }
+    scrollToBottom();
 }
 
-function appendMessageUI(text, role, animate = true) {
+function appendMessage(text, role, animate = true) {
     const wrapper = document.createElement("div");
-    wrapper.className = `message-wrapper ${role === 'user' ? 'user' : 'bot'}`;
-    if (!animate) {
-        wrapper.style.animation = 'none';
-    }
+    wrapper.className = `message-wrapper ${role}`;
 
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message ${role === 'user' ? 'user' : 'bot'}`;
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `message ${role}`;
 
-    if (role === 'bot') {
-        // Use marked if available for markdown processing
-        if (typeof marked !== 'undefined') {
-            messageDiv.innerHTML = marked.parse(text);
-        } else {
-            messageDiv.textContent = text;
-        }
+    if (role === 'bot' && typeof marked !== 'undefined') {
+        msgDiv.innerHTML = marked.parse(text);
     } else {
-        messageDiv.textContent = text;
+        msgDiv.textContent = text;
     }
 
-    const timeDiv = document.createElement("div");
-    timeDiv.className = "message-time";
-    const now = new Date();
-    timeDiv.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    const time = document.createElement("div");
+    time.className = "message-time";
+    time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    wrapper.appendChild(messageDiv);
-    wrapper.appendChild(timeDiv);
+    wrapper.appendChild(msgDiv);
+    wrapper.appendChild(time);
     chatBox.appendChild(wrapper);
     scrollToBottom();
 }
 
-function showTypingIndicator() {
+function showTyping() {
     const wrapper = document.createElement("div");
-    wrapper.className = `message-wrapper bot`;
+    wrapper.className = "message-wrapper bot";
     wrapper.id = "typingIndicator";
 
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message bot`;
+    const msgDiv = document.createElement("div");
+    msgDiv.className = "message bot";
+    msgDiv.innerHTML = `
+        <div class="typing-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    `;
 
-    const typingIndicator = document.createElement("div");
-    typingIndicator.className = "typing-indicator";
-    typingIndicator.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-
-    messageDiv.appendChild(typingIndicator);
-    wrapper.appendChild(messageDiv);
+    wrapper.appendChild(msgDiv);
     chatBox.appendChild(wrapper);
     scrollToBottom();
 }
 
-function removeTypingIndicator() {
-    const indicator = document.getElementById("typingIndicator");
-    if (indicator) {
-        indicator.remove();
-    }
+function removeTyping() {
+    const el = document.getElementById("typingIndicator");
+    if (el) el.remove();
 }
 
 function scrollToBottom() {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Messaging
+// --- API Communication ---
 async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
 
     userInput.value = "";
-    userInput.style.height = 'auto'; // Reset size
-    sendBtn.disabled = true;
+    userInput.style.height = 'auto';
 
-    if (welcomeScreen.style.display !== "none") {
-        welcomeScreen.style.display = "none";
-    }
+    const active = chats.find(c => c.id === currentChatId);
 
-    const currentChat = chats.find(c => c.id === currentChatId);
+    // Add user message to state
+    active.messages.push({ role: "user", content: text });
 
-    // Add User Message
-    const userMessage = { role: "user", content: text };
-    currentChat.messages.push(userMessage);
-
-    // Update title if first message
-    if (currentChat.messages.length === 1) {
-        currentChat.title = text.substring(0, 30) + (text.length > 30 ? "..." : "");
+    // Dynamic Title
+    if (active.messages.length === 1) {
+        active.title = text.substring(0, 25) + "...";
     }
 
     saveChats();
-    appendMessageUI(text, "user");
-
-    // Show typing
-    showTypingIndicator();
+    renderChatArea();
+    showTyping();
 
     try {
-        // Build context to send
-        const apiMessages = currentChat.messages.map(m => ({
-            role: m.role === 'bot' ? 'assistant' : m.role,
-            content: m.content
-        }));
-
-        let responseText = "Server response";
-        const res = await fetch("https://ai-chatbot-xxaw.onrender.com/chat", {
+        const response = await fetch("https://ai-chatbot-xxaw.onrender.com/chat", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 message: text,
-                messages: apiMessages
+                messages: active.messages.map(m => ({
+                    role: m.role === 'bot' ? 'assistant' : m.role,
+                    content: m.content
+                }))
             })
         });
 
-        const data = await res.json();
-        responseText = data.reply || "No response received";
+        const data = await response.json();
+        removeTyping();
 
-        removeTypingIndicator();
+        const botMsg = data.reply || "Transmission failed... System offline.";
+        active.messages.push({ role: "bot", content: botMsg });
 
-        const botMessage = { role: "bot", content: responseText };
-        currentChat.messages.push(botMessage);
-
-        // Save chats before rendering completely ensuring state is synced
         saveChats();
+        renderChatArea();
 
-        appendMessageUI(responseText, "bot");
-
-    } catch (error) {
-        removeTypingIndicator();
-        console.error(error);
-        const errorMsg = "Sorry, there was an error communicating with the server. Please try again later.";
-        currentChat.messages.push({ role: "bot", content: errorMsg });
-        saveChats();
-        appendMessageUI(errorMsg, "bot");
+    } catch (err) {
+        removeTyping();
+        console.error(err);
+        appendMessage("Critical Error: Connection lost with Nebula server.", "bot");
     }
 }
 
-// Run init
+// --- Start ---
 init();
-
-// Set initial textarea state
-userInput.dispatchEvent(new Event('input'));
