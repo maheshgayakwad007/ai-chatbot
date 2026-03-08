@@ -2,41 +2,93 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>AI Chatbot</title>
-
-<link rel="stylesheet" href="style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Workspace - Professional Chatbot</title>
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <div class="app-container">
+        <!-- Sidebar for History -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Chats</h2>
+                <button class="icon-btn close-sidebar-btn" id="closeSidebarBtn" title="Close Sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
 
-<div class="chat-container">
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <i class="fas fa-plus"></i> New Conversation
+            </button>
 
-<header class="chat-header">
-🤖 AI Assistant
-</header>
+            <div class="history-list" id="historyList">
+                <!-- Chat history items will be generated here -->
+            </div>
+        </aside>
 
-<div id="chatBox" class="chat-box"></div>
+        <!-- Main Chat Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="icon-btn menu-btn" id="menuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="agent-info">
+                        <div class="agent-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="agent-details">
+                            <h1>AI Assistant</h1>
+                            <span class="status"><span class="status-dot"></span> Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn delete-chat-btn" onclick="deleteCurrentChat()" title="Delete Current Chat">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </header>
 
-<div class="chat-input">
+            <!-- Chat Messages Area -->
+            <div class="chat-box" id="chatBox">
+                <!-- Welcome Screen Placeholder (shown when no messages) -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon"><i class="fas fa-sparkles"></i></div>
+                    <h2>How can I help you today?</h2>
+                    <p>Start a conversation by typing a message below.</p>
+                </div>
+                <!-- Dynamic messages appear here -->
+            </div>
 
-<input 
-type="text" 
-id="userInput" 
-placeholder="Ask anything..."
-onkeydown="handleEnter(event)"
->
+            <!-- Input Area -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea id="userInput" placeholder="Message AI Assistant..." rows="1"></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="footer-text">
+                    AI can make mistakes. Consider verifying important information.
+                </div>
+            </div>
+        </main>
+    </div>
 
-<button onclick="sendMessage()">Send</button>
-
-</div>
-
-</div>
-
-<script src="script.js"></script>
-
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>

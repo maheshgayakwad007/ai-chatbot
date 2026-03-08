@@ -9,7 +9,11 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://ai-chatbot-brown-six-33.vercel.app", "http://localhost:5500", "http://127.0.0.1:5500"],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
 const groq = new Groq({
@@ -17,35 +21,44 @@ const groq = new Groq({
 });
 
 app.post("/chat", async (req, res) => {
+  const { message, messages } = req.body;
 
-  const { message } = req.body;
+  let chatHistory = messages;
+
+  // Backwards compatibility if only message was passed
+  if (!chatHistory || !Array.isArray(chatHistory)) {
+    chatHistory = [
+      {
+        role: "user",
+        content: message || ""
+      }
+    ];
+  }
 
   try {
-
     const chatCompletion = await groq.chat.completions.create({
-  messages: [
-    {
-      role: "user",
-      content: message
-    }
-  ],
-  model: "llama-3.1-8b-instant"
-});
+      messages: chatHistory,
+      model: "llama-3.1-8b-instant"
+    });
 
     const reply = chatCompletion.choices[0].message.content;
-
     res.json({ reply });
 
   } catch (error) {
-
     console.log(error);
-
     res.status(500).json({ error: "AI Error" });
-
   }
 
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+app.get("/", (req, res) => {
+  res.send("Chatbot API is running! Use POST /chat to interact with the bot.");
+});
+
+app.get("/chat", (req, res) => {
+  res.send("This endpoint is designed for POST requests from the frontend chatbot. It is working correctly!");
+});
+
+app.listen(process.env.PORT || 5000, () => {
+  console.log(`Server running on port ${process.env.PORT || 5000}`);
 });
