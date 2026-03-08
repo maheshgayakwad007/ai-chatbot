@@ -1,4 +1,4 @@
-// --- Global State ---
+// --- App Engine Configuration ---
 const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -9,46 +9,45 @@ const sidebar = document.getElementById("sidebar");
 const menuBtn = document.getElementById("menuBtn");
 const closeSidebarBtn = document.getElementById("closeSidebarBtn");
 
-let chats = [];
-let currentChatId = null;
+let chatSessions = [];
+let currentId = null;
 
-// --- Initialize App ---
+// --- Initialize Core ---
 function init() {
-    loadHistory();
-    setupTheme();
-    setupEventListeners();
+    loadSessions();
+    applyTheme();
+    bindEvents();
 
-    if (chats.length === 0) {
-        startNewChat();
+    if (chatSessions.length === 0) {
+        startNewConversation();
     } else {
-        selectChat(chats[0].id);
+        switchToChat(chatSessions[0].id);
     }
 }
 
-function setupEventListeners() {
-    menuBtn.onclick = () => sidebar.classList.add("active");
-    closeSidebarBtn.onclick = () => sidebar.classList.remove("active");
-    themeToggleBtn.onclick = toggleTheme;
+function bindEvents() {
+    menuBtn.addEventListener("click", () => sidebar.classList.add("active"));
+    closeSidebarBtn.addEventListener("click", () => sidebar.classList.remove("active"));
+    themeToggleBtn.addEventListener("click", toggleTheme);
 
-    // Auto-resize textarea as you type
-    userInput.oninput = function () {
+    // Smooth Input Auto-scaling
+    userInput.addEventListener("input", function () {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-    };
+        this.style.height = Math.min(this.scrollHeight, 180) + 'px';
+    });
 
-    // Press Enter to send, Shift+Enter for new line
-    userInput.onkeydown = (e) => {
+    userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
-    };
+    });
 }
 
-// --- Theme Management ---
-function setupTheme() {
-    const saved = localStorage.getItem("chat-theme") || "dark";
-    if (saved === "light") {
+// --- Theme Shifting ---
+function applyTheme() {
+    const theme = localStorage.getItem("app-theme") || "dark";
+    if (theme === "light") {
         document.body.setAttribute("data-theme", "light");
         themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
     }
@@ -58,120 +57,122 @@ function toggleTheme() {
     const isLight = document.body.getAttribute("data-theme") === "light";
     if (isLight) {
         document.body.removeAttribute("data-theme");
-        localStorage.setItem("chat-theme", "dark");
+        localStorage.setItem("app-theme", "dark");
         themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
     } else {
         document.body.setAttribute("data-theme", "light");
-        localStorage.setItem("chat-theme", "light");
+        localStorage.setItem("app-theme", "light");
         themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
     }
 }
 
-// --- Chat & History Logic ---
-function loadHistory() {
-    const stored = localStorage.getItem("ai-chat-sessions");
-    if (stored) {
-        chats = JSON.parse(stored);
-        renderHistoryList();
+// --- State Management ---
+function loadSessions() {
+    const raw = localStorage.getItem("nebula-chat-vault");
+    if (raw) {
+        chatSessions = JSON.parse(raw);
+        renderHistory();
     }
 }
 
-function saveHistory() {
-    localStorage.setItem("ai-chat-sessions", JSON.stringify(chats));
-    renderHistoryList();
+function saveSessions() {
+    localStorage.setItem("nebula-chat-vault", JSON.stringify(chatSessions));
+    renderHistory();
 }
 
-function startNewChat() {
-    const newChat = {
-        id: "chat_" + Date.now(),
-        title: "New Chat",
+function startNewConversation() {
+    const newSession = {
+        id: "session_" + Date.now(),
+        title: "New Conversation",
         messages: []
     };
-    chats.unshift(newChat);
-    saveHistory();
-    selectChat(newChat.id);
+    chatSessions.unshift(newSession);
+    saveSessions();
+    switchToChat(newSession.id);
 }
 
-function selectChat(id) {
-    currentChatId = id;
+function switchToChat(id) {
+    currentId = id;
     renderChatArea();
-    renderHistoryList();
-    if (window.innerWidth < 800) sidebar.classList.remove("active");
+    renderHistory();
+    if (window.innerWidth < 850) sidebar.classList.remove("active");
 }
 
 function deleteCurrentChat() {
-    if (!currentChatId) return;
-    if (confirm("Delete this entire conversation?")) {
-        chats = chats.filter(c => c.id !== currentChatId);
-        saveHistory();
-        if (chats.length > 0) selectChat(chats[0].id);
-        else startNewChat();
+    if (!currentId) return;
+    if (confirm("Permanently erase this conversation thread?")) {
+        chatSessions = chatSessions.filter(s => s.id !== currentId);
+        saveSessions();
+        if (chatSessions.length > 0) switchToChat(chatSessions[0].id);
+        else startNewConversation();
     }
 }
 
+function usePrompt(text) {
+    userInput.value = text;
+    userInput.dispatchEvent(new Event('input'));
+    sendMessage();
+}
+
 // --- View Rendering ---
-function renderHistoryList() {
+function renderHistory() {
     historyList.innerHTML = "";
-    chats.forEach(chat => {
-        const item = document.createElement("div");
-        item.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
-        item.innerHTML = `<i class="fas fa-message"></i> <span>${chat.title}</span>`;
-        item.onclick = () => selectChat(chat.id);
-        historyList.appendChild(item);
+    chatSessions.forEach(session => {
+        const div = document.createElement("div");
+        div.className = `history-item ${session.id === currentId ? 'active' : ''}`;
+        div.innerHTML = `<i class="fas fa-comment-nodes"></i> <span>${session.title}</span>`;
+        div.onclick = () => switchToChat(session.id);
+        historyList.appendChild(div);
     });
 }
 
 function renderChatArea() {
     chatBox.innerHTML = "";
-    const active = chats.find(c => c.id === currentChatId);
+    const active = chatSessions.find(s => s.id === currentId);
 
     if (!active || active.messages.length === 0) {
-        // Show Welcome Screen
         chatBox.appendChild(welcomeScreen);
         welcomeScreen.style.display = "flex";
     } else {
         welcomeScreen.style.display = "none";
-        active.messages.forEach(msg => {
-            appendMessageUI(msg.content, msg.role);
-        });
+        active.messages.forEach(m => injectMessageUI(m.content, m.role));
     }
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function appendMessageUI(text, role) {
+function injectMessageUI(text, role) {
     const wrap = document.createElement("div");
     wrap.className = `message-wrapper ${role}`;
 
-    const msg = document.createElement("div");
-    msg.className = `message ${role}`;
+    const div = document.createElement("div");
+    div.className = `message ${role}`;
 
-    // Use marked for AI responses (markdown)
     if (role === 'bot' && typeof marked !== 'undefined') {
-        msg.innerHTML = marked.parse(text);
+        div.innerHTML = marked.parse(text);
     } else {
-        msg.textContent = text;
+        div.textContent = text;
     }
 
-    const time = document.createElement("div");
-    time.className = "message-time";
-    time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const t = document.createElement("div");
+    t.className = "message-time";
+    t.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    wrap.appendChild(msg);
-    wrap.appendChild(time);
+    wrap.appendChild(div);
+    wrap.appendChild(t);
     chatBox.appendChild(wrap);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function showTyping() {
+function showTypingIndicator() {
     const wrap = document.createElement("div");
     wrap.className = "message-wrapper bot";
-    wrap.id = "typing-ui";
+    wrap.id = "ui-typing";
     wrap.innerHTML = `
         <div class="message bot">
-            <div class="typing">
-                <div class="dot-anim"></div>
-                <div class="dot-anim"></div>
-                <div class="dot-anim"></div>
+            <div class="typing-container">
+                <div class="t-dot"></div>
+                <div class="t-dot"></div>
+                <div class="t-dot"></div>
             </div>
         </div>
     `;
@@ -179,38 +180,38 @@ function showTyping() {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function hideTyping() {
-    const el = document.getElementById("typing-ui");
+function hideTypingIndicator() {
+    const el = document.getElementById("ui-typing");
     if (el) el.remove();
 }
 
-// --- API Message Send ---
+// --- Communication ---
 async function sendMessage() {
-    const text = userInput.value.trim();
-    if (!text) return;
+    const content = userInput.value.trim();
+    if (!content) return;
 
     userInput.value = "";
-    userInput.style.height = 'auto'; // Reset textarea size
+    userInput.style.height = 'auto';
 
-    const active = chats.find(c => c.id === currentChatId);
+    const active = chatSessions.find(s => s.id === currentId);
 
-    // Store user message
-    active.messages.push({ role: "user", content: text });
+    // Store User Logic
+    active.messages.push({ role: "user", content });
 
-    // Set dynamic title if first message
+    // Update Title on First Msg
     if (active.messages.length === 1) {
-        active.title = text.substring(0, 30) + (text.length > 30 ? "..." : "");
+        active.title = content.substring(0, 25) + (content.length > 25 ? "..." : "");
     }
 
     renderChatArea();
-    showTyping();
+    showTypingIndicator();
 
     try {
         const response = await fetch("https://ai-chatbot-xxaw.onrender.com/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                message: text,
+                message: content,
                 messages: active.messages.map(m => ({
                     role: m.role === 'bot' ? 'assistant' : m.role,
                     content: m.content
@@ -219,20 +220,20 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        hideTyping();
+        hideTypingIndicator();
 
-        const botText = data.reply || "Sorry, I received an empty response.";
-        active.messages.push({ role: "bot", content: botText });
+        const reply = data.reply || "Connection interrupted. Attempting to restore...";
+        active.messages.push({ role: "bot", content: reply });
 
-        saveHistory();
+        saveSessions();
         renderChatArea();
 
     } catch (err) {
-        hideTyping();
+        hideTypingIndicator();
         console.error(err);
-        appendMessageUI("Communication error. Please check your internet or server.", "bot");
+        injectMessageUI("System Alert: Neural link unstable. Please retry your transmission.", "bot");
     }
 }
 
-// Start Application
+// Boot
 init();

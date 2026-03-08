@@ -4,98 +4,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Workspace - Modern Chatbot</title>
-    <!-- Simple, Clean English Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Nebula AI - Futuristic Chat Assistant</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
     <!-- Custom Style -->
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="dark-theme">
-    <!-- Subtle Gradient Background (Easier to read) -->
-    <div class="background-glow"></div>
+    <!-- Animated Futuristic Background -->
+    <div class="visual-engine">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="glass-overlay"></div>
+    </div>
 
-    <div class="app-container">
-        <!-- Sidebar: Chat History -->
+    <div class="app-shell">
+        <!-- Glass Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="brand">
-                    <i class="fas fa-robot"></i>
-                    <span>AI Assistant</span>
+                    <i class="fas fa-microchip-ai"></i>
+                    <span>NEBULA</span>
                 </div>
-                <button class="icon-btn close-btn" id="closeSidebarBtn" title="Close">
-                    <i class="fas fa-times"></i>
+                <button class="icon-btn mobile-close" id="closeSidebarBtn">
+                    <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
 
-            <button class="action-btn new-chat-btn" onclick="startNewChat()">
+            <button class="glass-btn new-chat-btn" onclick="startNewChat()">
                 <i class="fas fa-plus"></i> New Conversation
             </button>
 
             <div class="history-list" id="historyList">
-                <!-- Chat history will appear here -->
+                <!-- Chat history will be injected here -->
+            </div>
+
+            <div class="sidebar-footer">
+                <p>AI Engine v2.5</p>
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="main-content">
-            <!-- Top Navigation -->
-            <header class="main-header">
+        <!-- Main Experience Area -->
+        <main class="main-stage">
+            <!-- Frosted Header -->
+            <header class="glass-header">
                 <div class="header-left">
                     <button class="icon-btn menu-btn" id="menuBtn">
-                        <i class="fas fa-bars"></i>
+                        <i class="fas fa-bars-staggered"></i>
                     </button>
-                    <div class="assistant-status">
-                        <div class="avatar">
+                    <div class="bot-identity">
+                        <div class="avatar-glow">
                             <i class="fas fa-robot"></i>
                         </div>
-                        <div class="info">
-                            <h1>Chat Assistant</h1>
-                            <span class="online-tag"><span class="dot"></span> Online</span>
+                        <div class="identity-info">
+                            <h1>AI Assistant</h1>
+                            <span class="status-indicator">
+                                <span class="pulse-dot"></span> Core Online
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="header-right">
-                    <button class="icon-btn toggle-btn" id="themeToggleBtn" title="Change Theme">
+                <div class="header-actions">
+                    <button class="icon-btn theme-toggle" id="themeToggleBtn" title="Toggle Theme">
                         <i class="fas fa-moon"></i>
                     </button>
-                    <button class="icon-btn delete-btn" onclick="deleteCurrentChat()" title="Delete Chat">
-                        <i class="fas fa-trash-alt"></i>
+                    <button class="icon-btn delete-btn" onclick="deleteCurrentChat()" title="Delete Conversation">
+                        <i class="fas fa-trash-can"></i>
                     </button>
                 </div>
             </header>
 
-            <!-- Conversation Box -->
-            <div class="chat-container" id="chatBox">
-                <!-- Welcome Message -->
-                <div class="welcome-box" id="welcomeScreen">
-                    <div class="icon-circle">
-                        <i class="fas fa-comment-alt"></i>
+            <!-- Message Workspace -->
+            <div class="chat-viewport" id="chatBox">
+                <!-- Welcome Experience -->
+                <div class="welcome-hero" id="welcomeScreen">
+                    <div class="hero-visual">
+                        <i class="fas fa-sparkles"></i>
                     </div>
-                    <h2>How can I help you today?</h2>
-                    <p>Type a message below to start chatting with the AI.</p>
+                    <h2>How can I assist you?</h2>
+                    <p>Experience the next generation of AI interaction.</p>
+                    <div class="quick-pick">
+                        <button onclick="usePrompt('Give me some creative coding ideas')">Creative Ideas 💡</button>
+                        <button onclick="usePrompt('Explain AI in simple terms')">Explain AI 🤖</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Input Controls -->
-            <div class="input-area">
-                <div class="input-wrapper">
-                    <textarea id="userInput" placeholder="Type your message here..." rows="1"></textarea>
-                    <button class="send-button" id="sendBtn" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
+            <!-- Interaction Dock -->
+            <div class="interaction-dock">
+                <div class="glass-input-wrapper">
+                    <textarea id="userInput" placeholder="Message your assistant..." rows="1"></textarea>
+                    <button class="glow-send-btn" id="sendBtn" onclick="sendMessage()">
+                        <i class="fas fa-location-arrow"></i>
                     </button>
                 </div>
-                <div class="helper-text">AI can make mistakes. Please check important info.</div>
+                <div class="footer-note">
+                    Neural responses may vary. Professional discretion advised.
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Scripting -->
+    <!-- Scripting Engine -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js"></script>
 </body>
