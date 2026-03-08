@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ["https://ai-chatbot-brown-six-33.vercel.app", "http://localhost:5500", "http://127.0.0.1:5500"],
+  origin: ["https://ai-chatbot-mahi.vercel.app", "https://ai-chatbot-brown-six-33.vercel.app", "http://localhost:5500", "http://127.0.0.1:5500"],
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
