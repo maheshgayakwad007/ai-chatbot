@@ -1,4 +1,4 @@
-// --- Constants & State ---
+// --- Global State ---
 const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -12,13 +12,12 @@ const closeSidebarBtn = document.getElementById("closeSidebarBtn");
 let chats = [];
 let currentChatId = null;
 
-// --- Initialization ---
+// --- Initialize App ---
 function init() {
-    loadChats();
+    loadHistory();
     setupTheme();
     setupEventListeners();
 
-    // Auto-select or create first chat
     if (chats.length === 0) {
         startNewChat();
     } else {
@@ -27,101 +26,96 @@ function init() {
 }
 
 function setupEventListeners() {
-    menuBtn.addEventListener("click", () => sidebar.classList.add("active"));
-    closeSidebarBtn.addEventListener("click", () => sidebar.classList.remove("active"));
-    themeToggleBtn.addEventListener("click", toggleTheme);
+    menuBtn.onclick = () => sidebar.classList.add("active");
+    closeSidebarBtn.onclick = () => sidebar.classList.remove("active");
+    themeToggleBtn.onclick = toggleTheme;
 
-    // Auto-resize textarea
-    userInput.addEventListener("input", function () {
+    // Auto-resize textarea as you type
+    userInput.oninput = function () {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
-    });
+        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    };
 
-    userInput.addEventListener("keydown", (e) => {
+    // Press Enter to send, Shift+Enter for new line
+    userInput.onkeydown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
-    });
+    };
 }
 
 // --- Theme Management ---
 function setupTheme() {
-    const savedTheme = localStorage.getItem("nebula-theme") || "dark";
-    if (savedTheme === "light") {
+    const saved = localStorage.getItem("chat-theme") || "dark";
+    if (saved === "light") {
         document.body.setAttribute("data-theme", "light");
         themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
     }
 }
 
 function toggleTheme() {
-    const current = document.body.getAttribute("data-theme");
-    if (current === "light") {
+    const isLight = document.body.getAttribute("data-theme") === "light";
+    if (isLight) {
         document.body.removeAttribute("data-theme");
-        localStorage.setItem("nebula-theme", "dark");
+        localStorage.setItem("chat-theme", "dark");
         themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
     } else {
         document.body.setAttribute("data-theme", "light");
-        localStorage.setItem("nebula-theme", "light");
+        localStorage.setItem("chat-theme", "light");
         themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
     }
 }
 
-// --- Chat Core Logic ---
-function loadChats() {
-    const stored = localStorage.getItem("nebula-chats");
+// --- Chat & History Logic ---
+function loadHistory() {
+    const stored = localStorage.getItem("ai-chat-sessions");
     if (stored) {
         chats = JSON.parse(stored);
-        renderHistory();
+        renderHistoryList();
     }
 }
 
-function saveChats() {
-    localStorage.setItem("nebula-chats", JSON.stringify(chats));
-    renderHistory();
+function saveHistory() {
+    localStorage.setItem("ai-chat-sessions", JSON.stringify(chats));
+    renderHistoryList();
 }
 
 function startNewChat() {
     const newChat = {
-        id: Date.now().toString(),
-        title: "New Transmission",
+        id: "chat_" + Date.now(),
+        title: "New Chat",
         messages: []
     };
     chats.unshift(newChat);
-    saveChats();
+    saveHistory();
     selectChat(newChat.id);
 }
 
 function selectChat(id) {
     currentChatId = id;
     renderChatArea();
-    renderHistory();
-    if (window.innerWidth < 850) sidebar.classList.remove("active");
+    renderHistoryList();
+    if (window.innerWidth < 800) sidebar.classList.remove("active");
 }
 
 function deleteCurrentChat() {
     if (!currentChatId) return;
-    if (confirm("Erase this transmission folder?")) {
+    if (confirm("Delete this entire conversation?")) {
         chats = chats.filter(c => c.id !== currentChatId);
-        saveChats();
+        saveHistory();
         if (chats.length > 0) selectChat(chats[0].id);
         else startNewChat();
     }
 }
 
-function usePrompt(text) {
-    userInput.value = text;
-    userInput.style.height = 'auto';
-    sendMessage();
-}
-
-// --- UI Rendering ---
-function renderHistory() {
+// --- View Rendering ---
+function renderHistoryList() {
     historyList.innerHTML = "";
     chats.forEach(chat => {
         const item = document.createElement("div");
         item.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
-        item.innerHTML = `<i class="fas fa-comment-dots"></i> <span>${chat.title}</span>`;
+        item.innerHTML = `<i class="fas fa-message"></i> <span>${chat.title}</span>`;
         item.onclick = () => selectChat(chat.id);
         historyList.appendChild(item);
     });
@@ -132,98 +126,82 @@ function renderChatArea() {
     const active = chats.find(c => c.id === currentChatId);
 
     if (!active || active.messages.length === 0) {
-        chatBox.innerHTML = `
-            <div class="welcome-hero" id="welcomeScreen">
-                <div class="hero-icon">
-                    <i class="fas fa-meteor"></i>
-                </div>
-                <h2>Dimension: Neural</h2>
-                <p>Establishing digital uplink... Ready for interaction.</p>
-                <div class="suggested-prompts">
-                    <button onclick="usePrompt('Future of Space Travel')">Space Hub 🪐</button>
-                    <button onclick="usePrompt('How to code in Python?')">Python Core 🐍</button>
-                </div>
-            </div>
-        `;
+        // Show Welcome Screen
+        chatBox.appendChild(welcomeScreen);
+        welcomeScreen.style.display = "flex";
     } else {
+        welcomeScreen.style.display = "none";
         active.messages.forEach(msg => {
-            appendMessage(msg.content, msg.role, false);
+            appendMessageUI(msg.content, msg.role);
         });
     }
-    scrollToBottom();
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function appendMessage(text, role, animate = true) {
-    const wrapper = document.createElement("div");
-    wrapper.className = `message-wrapper ${role}`;
+function appendMessageUI(text, role) {
+    const wrap = document.createElement("div");
+    wrap.className = `message-wrapper ${role}`;
 
-    const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${role}`;
+    const msg = document.createElement("div");
+    msg.className = `message ${role}`;
 
+    // Use marked for AI responses (markdown)
     if (role === 'bot' && typeof marked !== 'undefined') {
-        msgDiv.innerHTML = marked.parse(text);
+        msg.innerHTML = marked.parse(text);
     } else {
-        msgDiv.textContent = text;
+        msg.textContent = text;
     }
 
     const time = document.createElement("div");
     time.className = "message-time";
     time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    wrapper.appendChild(msgDiv);
-    wrapper.appendChild(time);
-    chatBox.appendChild(wrapper);
-    scrollToBottom();
-}
-
-function showTyping() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-wrapper bot";
-    wrapper.id = "typingIndicator";
-
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message bot";
-    msgDiv.innerHTML = `
-        <div class="typing-dots">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-        </div>
-    `;
-
-    wrapper.appendChild(msgDiv);
-    chatBox.appendChild(wrapper);
-    scrollToBottom();
-}
-
-function removeTyping() {
-    const el = document.getElementById("typingIndicator");
-    if (el) el.remove();
-}
-
-function scrollToBottom() {
+    wrap.appendChild(msg);
+    wrap.appendChild(time);
+    chatBox.appendChild(wrap);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// --- API Communication ---
+function showTyping() {
+    const wrap = document.createElement("div");
+    wrap.className = "message-wrapper bot";
+    wrap.id = "typing-ui";
+    wrap.innerHTML = `
+        <div class="message bot">
+            <div class="typing">
+                <div class="dot-anim"></div>
+                <div class="dot-anim"></div>
+                <div class="dot-anim"></div>
+            </div>
+        </div>
+    `;
+    chatBox.appendChild(wrap);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function hideTyping() {
+    const el = document.getElementById("typing-ui");
+    if (el) el.remove();
+}
+
+// --- API Message Send ---
 async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
 
     userInput.value = "";
-    userInput.style.height = 'auto';
+    userInput.style.height = 'auto'; // Reset textarea size
 
     const active = chats.find(c => c.id === currentChatId);
 
-    // Add user message to state
+    // Store user message
     active.messages.push({ role: "user", content: text });
 
-    // Dynamic Title
+    // Set dynamic title if first message
     if (active.messages.length === 1) {
-        active.title = text.substring(0, 25) + "...";
+        active.title = text.substring(0, 30) + (text.length > 30 ? "..." : "");
     }
 
-    saveChats();
     renderChatArea();
     showTyping();
 
@@ -241,20 +219,20 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        removeTyping();
+        hideTyping();
 
-        const botMsg = data.reply || "Transmission failed... System offline.";
-        active.messages.push({ role: "bot", content: botMsg });
+        const botText = data.reply || "Sorry, I received an empty response.";
+        active.messages.push({ role: "bot", content: botText });
 
-        saveChats();
+        saveHistory();
         renderChatArea();
 
     } catch (err) {
-        removeTyping();
+        hideTyping();
         console.error(err);
-        appendMessage("Critical Error: Connection lost with Nebula server.", "bot");
+        appendMessageUI("Communication error. Please check your internet or server.", "bot");
     }
 }
 
-// --- Start ---
+// Start Application
 init();
